@@ -19,3 +19,6 @@ proc_macro = true
 [dependencies.const_env_impl]
 version = "=0.1.1"
 path = "../const_env_impl"
+
+[dev-dependencies]
+compiletest_rs = { version = "*", features = ["stable"] }

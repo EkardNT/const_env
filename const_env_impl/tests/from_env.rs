@@ -2,7 +2,6 @@ use const_env_impl::{from_env, TestEnv};
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::Item;
 
 #[test]
 fn test_str() {
