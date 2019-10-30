@@ -1,9 +1,9 @@
 # const_env
 
-- [Motivation](#Motivation)
-- [Usage](#Usage)
-- [Supported Types](#Supported_Types)
-- [Limitations](#Known_Limitations)
+- [Motivation](#motivation)
+- [Usage](#usage)
+- [Supported Types](#supported-types)
+- [Limitations](#known-limitations)
 
 ## Motivation
 
