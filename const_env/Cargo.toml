@@ -7,7 +7,7 @@ description = "Configure const and static items by environment variables."
 homepage = "https://github.com/EkardNT/const_env"
 repository = "https://github.com/EkardNT/const_env"
 readme = "README.md"
-keywords = ["env", "env var", "environment", "environment variable"]
+keywords = ["env", "envvar", "environment", "variable"]
 categories = ["development-tools::build-utils", "config"]
 license = "CC0-1.0"
 
