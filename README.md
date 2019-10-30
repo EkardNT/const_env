@@ -108,7 +108,7 @@ const FOO: &'static [u8] = b"hello";
 const FOO: &'static [u8] = b"world";
 ```
 
-- Bytes!
+Bytes!
 ```rust
 #[from_env]
 const FOO: u8 = b'⚙';
