@@ -4,6 +4,7 @@
 - [Usage](#usage)
 - [Supported Types](#supported-types)
 - [Limitations](#known-limitations)
+- [Alternatives](#alternatives)
 
 ## Motivation
 
@@ -176,3 +177,8 @@ const FOO: bool = true;
 ## Known Limitations
 
 - The environment variable values shouldn't contain whitespace, especially for negative numbers.
+
+## Alternatives
+
+- Writing a `build.rs` script which looks at the env vars and generates code based on them. This is conceptually similar to how this crate works, except that this crate uses a procedural macro instead of a build script.
+- Wait for [const fn](https://github.com/rust-lang/rust/issues/57563) to be finished, particularly [control flow](https://github.com/rust-lang/rust/issues/49146), so you can do `env!("FOO").parse().unwrap()` when assigning to const variables.
