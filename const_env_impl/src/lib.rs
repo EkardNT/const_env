@@ -55,7 +55,7 @@ impl TestEnvBuilder {
     }
 }
 
-/// Inner implementation details.
+/// Inner implementation details of `const_env::from_env`.
 pub fn from_env(attr: TokenStream, item: TokenStream, read_env: impl ReadEnv) -> TokenStream {
     if let Ok(mut item_const) = syn::parse2::<syn::ItemConst>(item.clone()) {
         let default_var_name = format!("{}", item_const.ident);
