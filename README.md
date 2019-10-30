@@ -19,7 +19,7 @@ const MY_STR: &'static str = env!("SOME_ENV");
 You cannot similarly initialize other types such as constant `u32`s, `bool`s, or
 other primitive types. See [issues](https://github.com/rust-lang/rfcs/issues/1907) and
 [workarounds](https://stackoverflow.com/questions/37526598/overriding-constant-via-compiler-option).
-Eventually you will be able to do so once support for running `parse` and `unwrap` in as
+Eventually you will be able to do so once support for running `parse` and `unwrap` in
 `const fn` lands, but for now this crate offers an easy workaround that you can use today.
 
 ## Usage
