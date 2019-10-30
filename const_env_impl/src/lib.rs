@@ -1,10 +1,8 @@
 use std::collections::HashMap;
-use std::ffi::OsString;
 
-use proc_macro2::{TokenStream, TokenTree};
+use proc_macro2::TokenStream;
 use quote::quote_spanned;
-use quote::ToTokens;
-use syn::{Expr, ExprLit, Lit, Type};
+use syn::{Expr, ExprLit, Lit};
 use syn::spanned::Spanned;
 
 pub trait ReadEnv {
@@ -163,7 +161,7 @@ fn value_to_literal(value: &str, original_expr: &Expr) -> Expr {
                     Lit::Float(new)
                 },
                 Lit::Bool(original) => {
-                    let mut new: bool = value.parse()
+                    let new: bool = value.parse()
                         .expect("Failed to parse environment variable contents as literal boolean");
                     Lit::Bool(syn::LitBool {
                         value: new,
