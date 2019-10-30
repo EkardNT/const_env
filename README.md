@@ -1,5 +1,12 @@
 # const_env
 
+- [Motivation](#Motivation)
+- [Usage](#Usage)
+- [Supported Types](#Supported_Types)
+- [Limitations](#Known_Limitations)
+
+## Motivation
+
 **Your goal**: You want to define various constants for your code at compile time based on environment variables.
 
 **Your problem**: Its only possible to do this for `&'static str` constants in today's Rust.
@@ -76,7 +83,7 @@ const FOO: &'static str = "hello";
 static BAR: &'static [u8] = b"world";
 ```
 
-## Supported types
+## Supported Types
 
 Strings!
 
