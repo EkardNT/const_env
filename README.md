@@ -169,7 +169,7 @@ Booleans!
 #[from_env]
 const FOO: bool = false;
 
-// example: `FOO=true cargo buil`
+// example: `FOO=true cargo build`
 // results in:
 const FOO: bool = true;
 ```
