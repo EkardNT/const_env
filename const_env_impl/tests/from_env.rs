@@ -290,3 +290,73 @@ fn test_str_static() {
     let result = from_env(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
+
+#[test]
+fn test_i16_negative() {
+    let env = TestEnv::builder()
+        .set("MYVAR", "-123")
+        .build();
+    let attr: TokenStream = quote! {
+        ("MYVAR")
+    };
+    let item: TokenStream = quote! {
+        static MYVAR: i16 = 0;
+    };
+    let expected: TokenStream = quote! {
+        static MYVAR: i16 = -123;
+    };
+    let result = from_env(attr, item, env);
+    assert_eq!(format!("{}", expected), format!("{}", result));
+}
+
+#[test]
+fn test_f32_negative() {
+    let env = TestEnv::builder()
+        .set("MYVAR", "-123.0")
+        .build();
+    let attr: TokenStream = quote! {
+        ("MYVAR")
+    };
+    let item: TokenStream = quote! {
+        static MYVAR: f32 = 0.0;
+    };
+    let expected: TokenStream = quote! {
+        static MYVAR: f32 = -123.0;
+    };
+    let result = from_env(attr, item, env);
+    assert_eq!(format!("{}", expected), format!("{}", result));
+}
+
+#[test]
+fn test_default_name() {
+    let env = TestEnv::builder()
+        .set("MYVAR", "world")
+        .build();
+    let attr: TokenStream = TokenStream::new();
+    let item: TokenStream = quote! {
+        static MYVAR: &'static str = "Hello";
+    };
+    let expected: TokenStream = quote! {
+        static MYVAR: &'static str = "world";
+    };
+    let result = from_env(attr, item, env);
+    assert_eq!(format!("{}", expected), format!("{}", result));
+}
+
+#[test]
+fn test_i32_negative_whitespace() {
+    let env = TestEnv::builder()
+        .set("MYVAR", " - 123 ")
+        .build();
+    let attr: TokenStream = quote! {
+        ("MYVAR")
+    };
+    let item: TokenStream = quote! {
+        static MYVAR: i32 = 0;
+    };
+    let expected: TokenStream = quote! {
+        static MYVAR: i32 = -123;
+    };
+    let result = from_env(attr, item, env);
+    assert_eq!(format!("{}", expected), format!("{}", result));
+}

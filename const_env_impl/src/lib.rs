@@ -112,14 +112,12 @@ fn extract_var_name_from_expr(expr: &Expr) -> String {
 
 fn value_to_literal(value: &str, original_expr: &Expr) -> Expr {
     match original_expr {
-        Expr::Unary(unary) => {
-            let mut unary = unary.clone();
-            // I'm not happy with this way of popping the unary symbol because it operates
-            // at the character level, not the token level, which means that whitespace
-            // can break it. Converting the `value` parameter to a TokenStream makes this
-            // easier but makes the parsing below much harder.
-            unary.expr = Box::new(value_to_literal(&value[1..], &unary.expr));
-            unary.into()
+        Expr::Unary(_) => {
+            // A unary sign indicates this is a numeric literal which doesn't need any
+            // escaping, so we can parse it directly.
+            let new: Expr = syn::parse_str(value)
+                .expect("Failed to parse environment variable contents as valid expresion");
+            return new;
         },
         Expr::Lit(literal) => {
             let new_lit = match &literal.lit {
@@ -147,29 +145,13 @@ fn value_to_literal(value: &str, original_expr: &Expr) -> Expr {
                     new.set_span(original.span());
                     Lit::Char(new)
                 },
-                Lit::Int(original) => {
-                    let mut new: syn::LitInt = syn::parse_str(&value)
-                        .expect("Failed to parse environment variable contents as literal integer");
-                    new.set_span(original.span());
-                    Lit::Int(new)
-                },
-                Lit::Float(original) => {
-                    let mut new: syn::LitFloat = syn::parse_str(&value)
-                        .expect("Failed to parse environment variable contents as literal float");
-                    new.set_span(original.span());
-                    Lit::Float(new)
-                },
-                Lit::Bool(original) => {
-                    let new: bool = value.parse()
-                        .expect("Failed to parse environment variable contents as literal boolean");
-                    Lit::Bool(syn::LitBool {
-                        value: new,
-                        span: original.span
-                    })
-                },
-                Lit::Verbatim(_) => {
-                    panic!("Verbatim literal found");
-                },
+                // These variants do not need any escaping and can be parsed as an expression
+                // directly.
+                Lit::Bool(_) | Lit::Int(_) | Lit::Float(_) | Lit::Verbatim(_) => {
+                    let new: Expr = syn::parse_str(value)
+                        .expect("Failed to parse environment variable contents as valid expression");
+                    return new;
+                }
             };
             ExprLit {
                 attrs: literal.attrs.clone(),
