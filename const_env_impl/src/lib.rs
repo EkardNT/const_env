@@ -111,7 +111,6 @@ fn extract_var_name_from_expr(expr: &Expr) -> String {
 }
 
 fn value_to_literal(value: &str, original_expr: &Expr) -> Expr {
-    println!("Original expression: {:?}", original_expr);
     match original_expr {
         Expr::Unary(unary) => {
             let mut unary = unary.clone();
