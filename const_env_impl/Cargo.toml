@@ -1,6 +1,6 @@
 [package]
 name = "const_env_impl"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Drake Tetreault <ekardnt@ekardnt.com>"]
 edition = "2018"
 description = "Configure const and static items by environment variables."

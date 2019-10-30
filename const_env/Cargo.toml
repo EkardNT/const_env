@@ -1,6 +1,6 @@
 [package]
 name = "const_env"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Drake Tetreault <ekardnt@ekardnt.com>"]
 edition = "2018"
 description = "Configure const and static items by environment variables."
@@ -17,7 +17,7 @@ proc_macro = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.const_env_impl]
-version = "=0.1.1"
+version = "=0.1.2"
 path = "../const_env_impl"
 
 [dev-dependencies]
