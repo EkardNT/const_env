@@ -176,7 +176,6 @@ const FOO: bool = true;
 
 ## Known Limitations
 
-- The environment variable values shouldn't contain whitespace, especially for negative numbers.
 - Only top-level `const` and `static` declarations are supported.
 
 ## Alternatives
