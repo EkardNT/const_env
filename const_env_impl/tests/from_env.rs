@@ -229,7 +229,7 @@ fn test_f32_with_suffix() {
         ("MYVAR")
     };
     let item: TokenStream = quote! {
-        const MYVAR: f32 = 0f32;
+        const MYVAR: f32 = 0.0;
     };
     let expected: TokenStream = quote! {
         const MYVAR: f32 = 1f32;
@@ -269,6 +269,24 @@ fn test_bool() {
     };
     let expected: TokenStream = quote! {
         const MYVAR: bool = true;
+    };
+    let result = from_env(attr, item, env);
+    assert_eq!(format!("{}", expected), format!("{}", result));
+}
+
+#[test]
+fn test_str_static() {
+    let env = TestEnv::builder()
+        .set("MYVAR", "world")
+        .build();
+    let attr: TokenStream = quote! {
+        ("MYVAR")
+    };
+    let item: TokenStream = quote! {
+        static MYVAR: &'static str = "Hello";
+    };
+    let expected: TokenStream = quote! {
+        static MYVAR: &'static str = "world";
     };
     let result = from_env(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));

@@ -65,3 +65,107 @@ The expression that you assign in your source acts as a default in case the envi
 #[from_env]
 const FOO: char = '🦀';
 ```
+
+Both `const` and `static` declarations are supported.
+
+```rust
+// Both of these may be set by `FOO=abc BAZ=def cargo build`.
+#[from_env]
+const FOO: &'static str = "hello";
+#[from_env("BAZ")]
+static BAR: &'static [u8] = b"world";
+```
+
+## Supported types
+
+Strings!
+
+```rust
+#[from_env]
+const FOO: &'static str = "hello";
+
+// example: `FOO=abc cargo build`
+// results in:
+const FOO: &'static str = "abc";
+```
+
+Byte strings!
+
+```rust
+#[from_env]
+const FOO: &'static [u8] = b"hello";
+
+// example: `FOO=world cargo build`
+// results in:
+const FOO: &'static [u8] = b"world";
+```
+
+- Bytes!
+```rust
+#[from_env]
+const FOO: u8 = b'⚙';
+
+// example: `FOO=🦀 cargo build`
+// results in:
+const FOO: u8 = b'🦀';
+```
+
+Characters!
+
+```rust
+#[from_env]
+const FOO: char = '⚙';
+
+// example: `FOO=🦀 cargo build`
+// results in:
+const FOO: car = '🦀';
+```
+
+Integers of all shapes and sizes!
+
+```rust
+#[from_env]
+const FOO: u32 = 123;
+#[from_env]
+const BAR: i64 = 456;
+#[from_env]
+const BAZ: usize = 0;
+
+// example: `FOO=321 BAR=-456 BAZ=1usize cargo build`
+// results in:
+const FOO: u32 = 321;
+const BAR: i64 = -456;
+const BAZ: usize = 1usize;
+```
+
+Floats of all shapes and sizes!
+
+```rust
+#[from_env]
+const FOO: f32 = 123.0;
+#[from_env]
+const BAR: f64 = 456.0;
+#[from_env]
+const BAZ: f32 = 0.0;
+
+// example: `FOO=321.0 BAR=-456.0 BAZ=1f32 cargo build`
+// results in:
+const FOO: f32 = 321.0;
+const BAR: f64 = -456.0;
+const BAZ: f32 = 1f32;
+```
+
+Booleans!
+
+```rust
+#[from_env]
+const FOO: bool = false;
+
+// example: `FOO=true cargo buil`
+// results in:
+const FOO: bool = true;
+```
+
+## Known Limitations
+
+- The environment variable values shouldn't contain whitespace, especially for negative numbers.
