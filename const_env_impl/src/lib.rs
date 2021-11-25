@@ -9,15 +9,6 @@ pub trait ReadEnv {
     fn read_env(&self, var_name: &String) -> Option<String>;
 }
 
-pub struct RealEnv;
-
-impl ReadEnv for RealEnv {
-    fn read_env(&self, var_name: &String) -> Option<String> {
-        std::env::var_os(var_name)
-            .and_then(|s| s.into_string().ok())
-    }
-}
-
 pub struct TestEnv {
     env_vars: HashMap<String, String>
 }

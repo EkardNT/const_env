@@ -1,6 +1,7 @@
 # const_env
 
 - [Motivation](#motivation)
+- [Crate Features](#crate-features)
 - [Usage](#usage)
 - [Supported Types](#supported-types)
 - [Limitations](#known-limitations)
@@ -22,13 +23,25 @@ other primitive types. See [issues](https://github.com/rust-lang/rfcs/issues/190
 Eventually you will be able to do so once support for running `parse` and `unwrap` in
 `const fn` lands, but for now this crate offers an easy workaround that you can use today.
 
+## Crate Features
+
+| Feature name | Enabled by default? | Requires nightly? | Description |
+|---|---|---|---|
+| `tracked` | No | yes | Use the unstable [proc_macro_tracked_env](https://github.com/rust-lang/rust/issues/74690) feature to inform the build system about the used environment variables. |
+
 ## Usage
 
-Add the dependency.
+Add the dependency. If your crate uses nightly, enable the `tracked` feature for better
+build dependency tracking.
 
 ```toml
+# If using a stable compiler:
 [dependencies]
 const_env = "0.1"
+
+# If using a nightly compiler:
+[dependencies]
+const_env = { version = "0.1", features = ["tracked"] }
 ```
 
 At the top of your file import the `from_env!` macro.
@@ -181,4 +194,6 @@ const FOO: bool = true;
 ## Alternatives
 
 - Writing a `build.rs` script which looks at the env vars and generates code based on them. This is conceptually similar to how this crate works, except that this crate uses a procedural macro instead of a build script.
-- Wait for [const fn](https://github.com/rust-lang/rust/issues/57563) to be finished, particularly [control flow](https://github.com/rust-lang/rust/issues/49146), so you can do `env!("FOO").parse().unwrap()` when assigning to const variables.
+- Wait for [const fn](https://github.com/rust-lang/rust/issues/57563) to be finished. Ultimated
+this crate does the equivalent of `static FOO: u32 = std::option_env!("FOO").map(|val| val.parse::<u32>().unwrap_or(0)).unwrap_or(0);`,
+so once you can simply write that code this crate will become superfluous.
