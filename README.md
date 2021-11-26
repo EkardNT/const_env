@@ -1,3 +1,11 @@
+# TODO
+
+This crate's implementation strategy in `master` has recently been updated to support a
+more powerful `env_lit!` macro that supports arbitrary literals (or really, arbitrary
+expressions). Need to finish testing the implementation (I think there are some quirks
+around string escaping that need to be thought through) and update this README to explain
+how to use `env_lit` instead of `from_env`.
+
 # const_env
 
 - [Motivation](#motivation)

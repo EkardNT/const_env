@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use proc_macro2::TokenStream;
-use quote::quote_spanned;
+use quote::{ToTokens, quote_spanned};
 use syn::{Expr, ExprLit, Lit};
 use syn::spanned::Spanned;
 
@@ -41,6 +41,84 @@ impl TestEnvBuilder {
         TestEnv {
             env_vars: self.env_vars
         }
+    }
+}
+
+struct MacroInput {
+    env_var_name: syn::LitStr,
+    default_value: syn::Expr,
+}
+
+impl syn::parse::Parse for MacroInput {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let args = syn::punctuated::Punctuated::<syn::Expr, syn::token::Comma>::parse_terminated(input)?;
+        if args.len() != 2 {
+            return Err(syn::Error::new(input.span(), "Exactly 2 arguments expected"));
+        }
+        let env_var_name = match args.first().unwrap() {
+            Expr::Lit(ExprLit { lit: syn::Lit::Str(lit_str), .. }) => {
+                lit_str.clone()
+            },
+            otherwise => return Err(syn::Error::new(otherwise.span(), "Expected first argument to be a string literal"))
+        };
+        let default_value = args.last().unwrap().clone();
+        Ok(Self {
+            env_var_name,
+            default_value
+        })
+    }
+}
+
+/// Include environment variable contents as a Rust literal.
+pub fn env_lit(tokens: TokenStream, read_env: impl ReadEnv) -> TokenStream {
+    let input: MacroInput = match syn::parse2(tokens) {
+        Ok(input) => input,
+        Err(err) => return err.to_compile_error()
+    };
+    let env_var_value = match read_env.read_env(&input.env_var_name.value()) {
+        Some(env_var_value) => env_var_value,
+        None => return input.default_value.into_token_stream()
+    };
+    let env_var_value_tokens = match env_var_value.parse::<TokenStream>() {
+        Ok(tokens) => tokens,
+        Err(err) => return syn::Error::new(input.env_var_name.span(), format!("{}", err)).to_compile_error()
+    };
+    // Special case logic for quoted literals such as strings. We want to allow users not
+    // to need to quote their environment variable values for strings, even though this is
+    // technically inconsistent with other literals. So here we handle string-like literals
+    // specially by auto-adding quotes. Note that we only do this for top-level string literals -
+    // other instances of literal strings, such as elements of an array, require the user to
+    // manually quote them.
+    match input.default_value {
+        syn::Expr::Lit(syn::ExprLit { lit: syn::Lit::Str(_), ..}) => {
+            let quoted = format!("\"{}\"", env_var_value);
+            match syn::parse_str::<syn::LitStr>(&quoted) {
+                Ok(literal) => literal.to_token_stream(),
+                Err(err) => syn::Error::new(input.env_var_name.span(), format!("Invalid string literal contents: {}", err)).to_compile_error()
+            }
+        }
+        syn::Expr::Lit(syn::ExprLit { lit: syn::Lit::ByteStr(_), ..}) => {
+            let quoted = format!("b\"{}\"", env_var_value);
+            match syn::parse_str::<syn::LitByteStr>(&quoted) {
+                Ok(literal) => literal.to_token_stream(),
+                Err(err) => syn::Error::new(input.env_var_name.span(), format!("Invalid byte string literal contents: {}", err)).to_compile_error()
+            }
+        }
+        syn::Expr::Lit(syn::ExprLit { lit: syn::Lit::Char(_), ..}) => {
+            let quoted = format!("'{}'", env_var_value);
+            match syn::parse_str::<syn::LitChar>(&quoted) {
+                Ok(literal) => literal.to_token_stream(),
+                Err(err) => syn::Error::new(input.env_var_name.span(), format!("Invalid char literal contents: {}", err)).to_compile_error()
+            }
+        }
+        syn::Expr::Lit(syn::ExprLit { lit: syn::Lit::Byte(_), ..}) => {
+            let quoted = format!("b'{}'", env_var_value);
+            match syn::parse_str::<syn::LitByte>(&quoted) {
+                Ok(literal) => literal.to_token_stream(),
+                Err(err) => syn::Error::new(input.env_var_name.span(), format!("Invalid byte literal contents: {}", err)).to_compile_error()
+            }
+        }
+        _ => env_var_value_tokens
     }
 }
 
@@ -103,11 +181,14 @@ fn extract_var_name_from_expr(expr: &Expr) -> String {
 
 fn value_to_literal(value: &str, original_expr: &Expr) -> Expr {
     match original_expr {
+        Expr::Array(_) => {
+            syn::Expr::Array(syn::parse_str::<syn::ExprArray>(value).expect("Failed to parse environment variable contents as valid array"))
+        },
         Expr::Unary(_) => {
             // A unary sign indicates this is a numeric literal which doesn't need any
             // escaping, so we can parse it directly.
             let new: Expr = syn::parse_str(value)
-                .expect("Failed to parse environment variable contents as valid expresion");
+                .expect("Failed to parse environment variable contents as valid expression");
             return new;
         },
         Expr::Lit(literal) => {

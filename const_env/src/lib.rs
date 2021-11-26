@@ -9,12 +9,21 @@ use proc_macro::TokenStream;
 
 /// Configure a `const` or `static` item from an environment variable.
 #[proc_macro_attribute]
-pub fn from_env(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn env_item(attr: TokenStream, item: TokenStream) -> TokenStream {
     #[cfg(not(feature = "tracked"))]
     let read_env = StableEnv {};
     #[cfg(feature = "tracked")]
     let read_env = TrackedEnv {};
     const_env_impl::from_env(attr.into(), item.into(), read_env).into()
+}
+
+#[proc_macro]
+pub fn env_lit(tokens: TokenStream) -> TokenStream {
+    #[cfg(not(feature = "tracked"))]
+    let read_env = StableEnv {};
+    #[cfg(feature = "tracked")]
+    let read_env = TrackedEnv {};
+    const_env_impl::env_lit(tokens.into(), read_env).into()
 }
 
 #[cfg(feature = "tracked")]

@@ -25,6 +25,14 @@ fn smoke() {
     set_var("NEGATIVE_F32", "-456f32");
     set_var("SMOKE_STR", "bar");
     set_var("SMOKE_U32", "321");
+    set_var("QUOTED_STR", "hello world");
+    set_var("QUOTED_BYTE_STR", "01abcS");
+    set_var("QUOTED_CHAR", "\t");
+    set_var("QUOTED_BYTE", "\\n");
+    set_var("INT_ARRAY", "[10, 11, 12]");
+    set_var("STRING_ARRAY", "[\"bar\"]");
+    set_var("TUPLE_ARRAY", r#"[("goodbye", false), ("planet", true)]"#);
+    set_var("ORIGIN", "Vec2 { x: 1., y: 2.}");
     run_test("run-pass", "run-pass/untracked", |_| {});
 }
 

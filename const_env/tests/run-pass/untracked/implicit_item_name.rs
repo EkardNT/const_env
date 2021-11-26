@@ -1,11 +1,11 @@
 extern crate const_env;
 
-use const_env::from_env;
+use const_env::env_item;
 
-#[from_env]
+#[env_item]
 const IMPLICIT_ISIZE: isize = 0;
 
-#[from_env]
+#[env_item]
 const IMPLICIT_F64: f64 = 0.0;
 
 fn main() {

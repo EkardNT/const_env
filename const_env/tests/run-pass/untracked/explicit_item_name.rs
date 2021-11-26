@@ -1,11 +1,11 @@
 extern crate const_env;
 
-use const_env::from_env;
+use const_env::env_item;
 
-#[from_env("EXPLICIT_OVERRIDE_ISIZE")]
+#[env_item("EXPLICIT_OVERRIDE_ISIZE")]
 const EXPLICIT_ISIZE: isize = 0;
 
-#[from_env("EXPLICIT_OVERRIDE_F64")]
+#[env_item("EXPLICIT_OVERRIDE_F64")]
 const EXPLICIT_F64: f64 = 0.0;
 
 fn main() {
