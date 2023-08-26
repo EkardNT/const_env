@@ -1,6 +1,6 @@
 [package]
 name = "const_env"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Drake Tetreault <ekardnt@ekardnt.com>"]
 edition = "2021"
 description = "Configure const and static items by environment variables."
@@ -18,7 +18,7 @@ proc_macro = true
 tracked = []
 
 [dependencies.const_env_impl]
-version = "=0.1.3"
+version = "=0.1.4"
 path = "../const_env_impl"
 
 [dev-dependencies]
