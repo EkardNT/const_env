@@ -266,6 +266,7 @@ fn value_to_literal(value: &str, original_expr: &Expr) -> Expr {
                     );
                     return new;
                 }
+                _ => unimplemented!("Unhandled literal variant"),
             };
             ExprLit {
                 attrs: literal.attrs.clone(),
