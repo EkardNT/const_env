@@ -124,96 +124,105 @@ pub fn env_lit(tokens: TokenStream, read_env: impl ReadEnv) -> TokenStream {
 
 /// Inner implementation details of `const_env::from_env`.
 pub fn from_env(attr: TokenStream, item: TokenStream, read_env: impl ReadEnv) -> TokenStream {
-    if let Ok(mut item_const) = syn::parse2::<syn::ItemConst>(item.clone()) {
-        let default_var_name = format!("{}", item_const.ident);
-        let var_name = extract_var_name(attr, default_var_name);
-        let var_value = match read_env.read_env(&var_name) {
-            Some(val) => val,
-            None => return item
-        };
-        let new_expr = value_to_literal(&var_value, &item_const.expr);
-        let span = item_const.span();
-        item_const.expr = Box::new(new_expr);
-        quote_spanned!(span => #item_const)
-    } else if let Ok(mut item_static) = syn::parse2::<syn::ItemStatic>(item.clone()) {
-        let default_var_name = format!("{}", item_static.ident);
-        let var_name = extract_var_name(attr, default_var_name);
-        let var_value = match read_env.read_env(&var_name) {
-            Some(val) => val,
-            None => return item
-        };
-        let new_expr = value_to_literal(&var_value, &item_static.expr);
-        let span = item_static.span();
-        item_static.expr = Box::new(new_expr);
-        quote_spanned!(span => #item_static)
-    } else {
-        panic!("TODO: error reporting");
+    match try_from_env(attr, item, read_env) {
+        Ok(tokens) => tokens,
+        Err(err) => err.into_compile_error()
     }
 }
 
-fn extract_var_name(attr: TokenStream, default: String) -> String {
-    if attr.is_empty() {
-        return default;
+fn try_from_env(attr: TokenStream, item: TokenStream, read_env: impl ReadEnv) -> Result<TokenStream, syn::Error> {
+    if let Ok(mut item_const) = syn::parse2::<syn::ItemConst>(item.clone()) {
+        let default_var_name = format!("{}", item_const.ident);
+        let var_name = extract_var_name(attr, default_var_name)?;
+        let var_value = match read_env.read_env(&var_name) {
+            Some(val) => val,
+            None => return Ok(item)
+        };
+        let new_expr = value_to_literal(&var_value, &item_const.expr)?;
+        let span = item_const.span();
+        item_const.expr = Box::new(new_expr);
+        Ok(quote_spanned!(span => #item_const))
+    } else if let Ok(mut item_static) = syn::parse2::<syn::ItemStatic>(item.clone()) {
+        let default_var_name = format!("{}", item_static.ident);
+        let var_name = extract_var_name(attr, default_var_name)?;
+        let var_value = match read_env.read_env(&var_name) {
+            Some(val) => val,
+            None => return Ok(item)
+        };
+        let new_expr = value_to_literal(&var_value, &item_static.expr)?;
+        let span = item_static.span();
+        item_static.expr = Box::new(new_expr);
+        Ok(quote_spanned!(span => #item_static))
+    } else {
+        Err(syn::Error::new(attr.span(), "Macro is only valid on const or static items"))
     }
+}
+
+fn extract_var_name(attr: TokenStream, default: String) -> Result<String, syn::Error> {
+    if attr.is_empty() {
+        return Ok(default);
+    }
+    let span = attr.span();
     let expr: Expr = syn::parse2(attr)
-        .expect("Unable to parse attribute args as expression");
+        .map_err(|_| syn::Error::new(span,"Unable to parse attribute args as expression"))?;
     extract_var_name_from_expr(&expr)
 }
 
-fn extract_var_name_from_expr(expr: &Expr) -> String {
+fn extract_var_name_from_expr(expr: &Expr) -> Result<String, syn::Error> {
     match expr {
         Expr::Lit(literal) => {
             match &literal.lit {
                 Lit::Str(lit_str) => {
-                    lit_str.value()
+                    Ok(lit_str.value())
                 },
-                _ => panic!("Attribute arguments are not a valid string literal")
+                _ => Err(syn::Error::new_spanned(expr, "Attribute arguments are not a valid string literal"))
             }
         },
         Expr::Paren(paren) => {
             extract_var_name_from_expr(&paren.expr)
         },
         _ => {
-            panic!("Attribute arguments are not a valid string literal expression: {:?}", expr)
+            Err(syn::Error::new_spanned(expr, "Attribute arguments are not a valid string literal expression"))
         }
     }
 }
 
-fn value_to_literal(value: &str, original_expr: &Expr) -> Expr {
-    match original_expr {
-        Expr::Array(_) => {
-            syn::Expr::Array(syn::parse_str::<syn::ExprArray>(value).expect("Failed to parse environment variable contents as valid array"))
+fn value_to_literal(value: &str, original_expr: &Expr) -> Result<Expr, syn::Error> {
+    Ok(match original_expr {
+        Expr::Array(array) => {
+            syn::Expr::Array(syn::parse_str::<syn::ExprArray>(value)
+                .map_err(|_| syn::Error::new_spanned(array, "Failed to parse environment variable contents as valid array"))?)
         },
-        Expr::Unary(_) => {
+        Expr::Unary(unary) => {
             // A unary sign indicates this is a numeric literal which doesn't need any
             // escaping, so we can parse it directly.
             let new: Expr = syn::parse_str(value)
-                .expect("Failed to parse environment variable contents as valid expression");
-            return new;
+                .map_err(|_| syn::Error::new_spanned(unary, "Failed to parse environment variable contents as valid expression"))?;
+            return Ok(new);
         },
         Expr::Lit(literal) => {
             let new_lit = match &literal.lit {
                 Lit::Str(original) => {
                     let mut new: syn::LitStr = syn::parse_str(&format!("\"{}\"", value))
-                        .expect("Failed to parse environment variable contents as literal string");
+                        .map_err(|_| syn::Error::new_spanned(original, "Failed to parse environment variable contents as literal string"))?;
                     new.set_span(original.span());
                     Lit::Str(new)
                 },
                 Lit::ByteStr(original) => {
                     let mut new: syn::LitByteStr = syn::parse_str(&format!("b\"{}\"", value))
-                        .expect("Failed to parse environment variable contents as literal byte string");
+                        .map_err(|_| syn::Error::new_spanned(original, "Failed to parse environment variable contents as literal byte string"))?;
                     new.set_span(original.span());
                     Lit::ByteStr(new)
                 },
                 Lit::Byte(original) => {
                     let mut new: syn::LitByte = syn::parse_str(&format!("b'{}'", value))
-                        .expect("Failed to parse environment variable contents as literal byte");
+                        .map_err(|_| syn::Error::new_spanned(original, "Failed to parse environment variable contents as literal byte"))?;
                     new.set_span(original.span());
                     Lit::Byte(new)
                 },
                 Lit::Char(original) => {
                     let mut new: syn::LitChar = syn::parse_str(&format!("'{}'", value))
-                        .expect("Failed to parse environment variable contents as literal character");
+                        .map_err(|_| syn::Error::new_spanned(original, "Failed to parse environment variable contents as literal character"))?;
                     new.set_span(original.span());
                     Lit::Char(new)
                 },
@@ -221,8 +230,11 @@ fn value_to_literal(value: &str, original_expr: &Expr) -> Expr {
                 // directly.
                 Lit::Bool(_) | Lit::Int(_) | Lit::Float(_) | Lit::Verbatim(_) => {
                     let new: Expr = syn::parse_str(value)
-                        .expect("Failed to parse environment variable contents as valid expression");
-                    return new;
+                        .map_err(|_| syn::Error::new_spanned(original_expr, "Failed to parse environment variable contents as valid expression"))?;
+                    return Ok(new);
+                },
+                unhandled => {
+                    return Err(syn::Error::new_spanned(unhandled, "Unsupported literal type"));
                 }
             };
             ExprLit {
@@ -230,6 +242,8 @@ fn value_to_literal(value: &str, original_expr: &Expr) -> Expr {
                 lit: new_lit
             }.into()
         },
-        _ => panic!("Original const expression was not a recognized literal expression")
-    }
+        expr => {
+            return Err(syn::Error::new_spanned(expr, "Original const expression was not a recognized literal expression"));
+        }
+    })
 }
