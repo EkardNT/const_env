@@ -24,7 +24,7 @@ use proc_macro::TokenStream;
 /// // to define the Rust f64 FOO literal. If no FOO environment
 /// // variable is defined, then the Rust literal will have the
 /// // value 0.0.
-/// #[env_item]
+/// #[const_env::env_item]
 /// static FOO: f64 = 0.0;
 /// ```
 /// 
@@ -33,7 +33,7 @@ use proc_macro::TokenStream;
 /// // to define the Rust f64 FOO literal. If no BAR environment
 /// // variable is defined, then the Rust literal will have the
 /// // value 0.0
-/// #[env_item("BAR")]
+/// #[const_env::env_item("BAR")]
 /// static FOO: f64 = 0.0;
 /// ```
 #[proc_macro_attribute]
@@ -72,7 +72,7 @@ pub fn from_env(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// // In this example, the HELLO_WORLD environment variable's value will be used as the value of the FOO
 /// // Rust constant. If no such HELLO_WORLD variable is defined, then the value 0 will be used as the default
 /// // value of the constant.
-/// const FOO: u8 = env_lit!("HELLO_WORLD", 0);
+/// const FOO: u8 = const_env::env_lit!("HELLO_WORLD", 0);
 /// ```
 #[proc_macro]
 pub fn env_lit(tokens: TokenStream) -> TokenStream {
