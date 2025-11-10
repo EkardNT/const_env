@@ -1,5 +1,6 @@
 [package]
 name = "const_env_tests"
+description = "Real tests using const_env."
 publish = false
 version.workspace = true
 authors.workspace = true
