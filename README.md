@@ -1,11 +1,3 @@
-# TODO
-
-This crate's implementation strategy in `master` has recently been updated to support a
-more powerful `env_lit!` macro that supports arbitrary literals (or really, arbitrary
-expressions). Need to finish testing the implementation (I think there are some quirks
-around string escaping that need to be thought through) and update this README to explain
-how to use `env_lit` instead of `from_env`.
-
 # const_env
 
 - [Motivation](#motivation)
@@ -35,7 +27,7 @@ Eventually you will be able to do so once support for running `parse` and `unwra
 
 | Feature name | Enabled by default? | Requires nightly? | Description |
 |---|---|---|---|
-| `tracked` | No | yes | Use the unstable [proc_macro_tracked_env](https://github.com/rust-lang/rust/issues/74690) feature to inform the build system about the used environment variables. |
+| `tracked` | No | Yes | Use the unstable [proc_macro_tracked_env](https://github.com/rust-lang/rust/issues/74690) feature to inform the build system about the used environment variables. |
 
 ## Usage
 
