@@ -63,7 +63,10 @@ struct Vec2<T> {
     y: T
 }
 
-static ORIGIN: Vec2<f32> = env_lit!("ORIGIN", Vec2 { x: 0., y: 0.});
+#[env_item]
+static ORIGIN: Vec2<f64> = Vec2 { x: 0., y: 0. };
+
+static ORIGIN_LIT: Vec2<f32> = env_lit!("ORIGIN", Vec2 { x: 0., y: 0.});
 
 fn main() {
     assert_eq!([10, 11, 12], USIZE_ARRAY);
@@ -90,6 +93,7 @@ fn main() {
     assert_eq!(321, SMOKE_U32);
     assert_eq!(321, SMOKE_U32_LIT);
     assert_eq!(Vec2 { x: 1., y: 2.}, ORIGIN);
+    assert_eq!(Vec2 { x: 1., y: 2.}, ORIGIN_LIT);
 
     println!("Tests succeeded!");
 }

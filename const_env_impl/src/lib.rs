@@ -122,15 +122,15 @@ pub fn env_lit(tokens: TokenStream, read_env: impl ReadEnv) -> TokenStream {
     }
 }
 
-/// Inner implementation details of `const_env::from_env`.
-pub fn from_env(attr: TokenStream, item: TokenStream, read_env: impl ReadEnv) -> TokenStream {
-    match try_from_env(attr, item, read_env) {
+/// Inner implementation details of `const_env::env_item`.
+pub fn env_item(attr: TokenStream, item: TokenStream, read_env: impl ReadEnv) -> TokenStream {
+    match try_env_item(attr, item, read_env) {
         Ok(tokens) => tokens,
         Err(err) => err.into_compile_error()
     }
 }
 
-fn try_from_env(attr: TokenStream, item: TokenStream, read_env: impl ReadEnv) -> Result<TokenStream, syn::Error> {
+fn try_env_item(attr: TokenStream, item: TokenStream, read_env: impl ReadEnv) -> Result<TokenStream, syn::Error> {
     if let Ok(mut item_const) = syn::parse2::<syn::ItemConst>(item.clone()) {
         let default_var_name = format!("{}", item_const.ident);
         let var_name = extract_var_name(attr, default_var_name)?;
@@ -242,6 +242,9 @@ fn value_to_literal(value: &str, original_expr: &Expr) -> Result<Expr, syn::Erro
                 lit: new_lit
             }.into()
         },
+        Expr::Struct(_) => {
+            return Ok(syn::parse_str(value)?)
+        }
         expr => {
             return Err(syn::Error::new_spanned(expr, "Original const expression was not a recognized literal expression"));
         }

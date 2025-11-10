@@ -1,4 +1,4 @@
-use const_env_impl::{from_env, TestEnv};
+use const_env_impl::{env_item, TestEnv};
 
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -17,7 +17,7 @@ fn test_str() {
     let expected: TokenStream = quote! {
         const MYVAR: &'static str = "world";
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -35,7 +35,7 @@ fn test_str_with_escapes() {
     let expected: TokenStream = quote! {
         const MYVAR: &'static str = "world\tfoo";
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -53,7 +53,7 @@ fn test_byte_str() {
     let expected: TokenStream = quote! {
         const MYVAR: &'static [u8] = b"world";
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -71,7 +71,7 @@ fn test_u32() {
     let expected: TokenStream = quote! {
         const MYVAR: u32 = 1;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -89,7 +89,7 @@ fn test_u32_with_suffix() {
     let expected: TokenStream = quote! {
         const MYVAR: u32 = 1u32;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -107,7 +107,7 @@ fn test_i64() {
     let expected: TokenStream = quote! {
         const MYVAR: i64 = 1;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -125,7 +125,7 @@ fn test_i64_with_suffix() {
     let expected: TokenStream = quote! {
         const MYVAR: i64 = 1i64;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -143,7 +143,7 @@ fn test_i64_with_negative() {
     let expected: TokenStream = quote! {
         const MYVAR: i64 = -1;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -161,7 +161,7 @@ fn test_char() {
     let expected: TokenStream = quote! {
         const MYVAR: char = 'b';
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -179,7 +179,7 @@ fn test_byte() {
     let expected: TokenStream = quote! {
         const MYVAR: u8 = b'b';
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -197,7 +197,7 @@ fn test_byte_with_escape() {
     let expected: TokenStream = quote! {
         const MYVAR: u8 = b'\n';
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -215,7 +215,7 @@ fn test_f32() {
     let expected: TokenStream = quote! {
         const MYVAR: f32 = 1.0;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -233,7 +233,7 @@ fn test_f32_with_suffix() {
     let expected: TokenStream = quote! {
         const MYVAR: f32 = 1f32;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -251,7 +251,7 @@ fn test_f32_with_negative() {
     let expected: TokenStream = quote! {
         const MYVAR: f32 = -1.0;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -269,7 +269,7 @@ fn test_bool() {
     let expected: TokenStream = quote! {
         const MYVAR: bool = true;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -287,7 +287,7 @@ fn test_str_static() {
     let expected: TokenStream = quote! {
         static MYVAR: &'static str = "world";
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -305,7 +305,7 @@ fn test_i16_negative() {
     let expected: TokenStream = quote! {
         static MYVAR: i16 = -123;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -323,7 +323,7 @@ fn test_f32_negative() {
     let expected: TokenStream = quote! {
         static MYVAR: f32 = -123.0;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -339,7 +339,7 @@ fn test_default_name() {
     let expected: TokenStream = quote! {
         static MYVAR: &'static str = "world";
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }
 
@@ -357,6 +357,6 @@ fn test_i32_negative_whitespace() {
     let expected: TokenStream = quote! {
         static MYVAR: i32 = -123;
     };
-    let result = from_env(attr, item, env);
+    let result = env_item(attr, item, env);
     assert_eq!(format!("{}", expected), format!("{}", result));
 }

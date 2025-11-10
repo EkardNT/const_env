@@ -52,30 +52,33 @@ const_env = "0.1"
 const_env = { version = "0.1", features = ["tracked"] }
 ```
 
-At the top of your file import the `from_env!` macro.
+At the top of your file import the `env_item!` and/or `env_lit!` macros.
 
 ```rust
-use const_env::from_env;
+use const_env::{env_item, env_lit};
 ```
 
 Use the macro to override the value of constants based on environment variables at build time.
 
 ```rust
-#[from_env]
+#[env_item]
 const FOO: u32 = 123;
 
-// This test will PASS if invoked as `FOO=456 cargo test`
+const BAR: bool = env_lit!("BAR", false);
+
+// This test will PASS if invoked as `FOO=456 BAR=true cargo test`
 #[test]
 fn test() {
     assert_eq!(456, FOO);
+    assert_eq!(true, BAR);
 }
 ```
 
-By default, the macro looks for an environment variable with the same name as the constant that it is attached to.
+By default, the `env_item` macro looks for an environment variable with the same name as the constant that it is attached to.
 
 ```rust
 // Use `FOO=true cargo build` to configure the value.
-#[from_env]
+#[env_item]
 const FOO: bool = false;
 ```
 
@@ -83,7 +86,7 @@ But you can specify a name explicitly too.
 
 ```rust
 // Use `BAR=true cargo build` to configure the value.
-#[from_env("BAR")]
+#[env_item("BAR")]
 const FOO: bool = false;
 ```
 
@@ -91,7 +94,7 @@ The expression that you assign in your source acts as a default in case the envi
 
 ```rust
 // If env var FOO is not set then the FOO constant will have the default value of '🦀'.
-#[from_env]
+#[env_item]
 const FOO: char = '🦀';
 ```
 
@@ -99,9 +102,9 @@ Both `const` and `static` declarations are supported.
 
 ```rust
 // Both of these may be set by `FOO=abc BAZ=def cargo build`.
-#[from_env]
+#[env_item]
 const FOO: &'static str = "hello";
-#[from_env("BAZ")]
+#[env_item("BAZ")]
 static BAR: &'static [u8] = b"world";
 ```
 
@@ -110,7 +113,7 @@ static BAR: &'static [u8] = b"world";
 Strings!
 
 ```rust
-#[from_env]
+#[env_item]
 const FOO: &'static str = "hello";
 
 // example: `FOO=abc cargo build`
@@ -121,7 +124,7 @@ const FOO: &'static str = "abc";
 Byte strings!
 
 ```rust
-#[from_env]
+#[env_item]
 const FOO: &'static [u8] = b"hello";
 
 // example: `FOO=world cargo build`
@@ -131,7 +134,7 @@ const FOO: &'static [u8] = b"world";
 
 Bytes!
 ```rust
-#[from_env]
+#[env_item]
 const FOO: u8 = b'⚙';
 
 // example: `FOO=🦀 cargo build`
@@ -142,7 +145,7 @@ const FOO: u8 = b'🦀';
 Characters!
 
 ```rust
-#[from_env]
+#[env_item]
 const FOO: char = '⚙';
 
 // example: `FOO=🦀 cargo build`
@@ -153,11 +156,11 @@ const FOO: car = '🦀';
 Integers of all shapes and sizes!
 
 ```rust
-#[from_env]
+#[env_item]
 const FOO: u32 = 123;
-#[from_env]
+#[env_item]
 const BAR: i64 = 456;
-#[from_env]
+#[env_item]
 const BAZ: usize = 0;
 
 // example: `FOO=321 BAR=-456 BAZ=1usize cargo build`
@@ -170,11 +173,11 @@ const BAZ: usize = 1usize;
 Floats of all shapes and sizes!
 
 ```rust
-#[from_env]
+#[env_item]
 const FOO: f32 = 123.0;
-#[from_env]
+#[env_item]
 const BAR: f64 = 456.0;
-#[from_env]
+#[env_item]
 const BAZ: f32 = 0.0;
 
 // example: `FOO=321.0 BAR=-456.0 BAZ=1f32 cargo build`
@@ -187,7 +190,7 @@ const BAZ: f32 = 1f32;
 Booleans!
 
 ```rust
-#[from_env]
+#[env_item]
 const FOO: bool = false;
 
 // example: `FOO=true cargo build`
@@ -201,7 +204,17 @@ const FOO: bool = true;
 
 ## Alternatives
 
-- Writing a `build.rs` script which looks at the env vars and generates code based on them. This is conceptually similar to how this crate works, except that this crate uses a procedural macro instead of a build script.
-- Wait for [const fn](https://github.com/rust-lang/rust/issues/57563) to be finished. Ultimated
-this crate does the equivalent of `static FOO: u32 = std::option_env!("FOO").map(|val| val.parse::<u32>().unwrap_or(0)).unwrap_or(0);`,
-so once you can simply write that code this crate will become superfluous.
+An immediately available alternative would be to write a `build.rs` script which looks at the env vars and generates code based on them. This is conceptually similar to how this crate works, except that this crate uses a procedural macro instead of a build script.
+
+Longer term, this crate will hopefully become completely superceded by being able to write normal Rust code once compile-time const evaluation of [FromStr](https://github.com/rust-lang/rust/issues/143773) and [various Option methods](https://github.com/rust-lang/rust/issues/143956). That will allow you to modify your code like so:
+
+```rust
+// Current code using this library.
+#[env_item]
+const FOO: u32 = 0;
+
+// New code, no library needed.
+const FOO: u32 = option_env!("FOO").and_then(|s| s.parse::<u32>().ok()).unwrap_or(0);
+```
+
+Until that is possible, I'm not aware of an alternative approach.
