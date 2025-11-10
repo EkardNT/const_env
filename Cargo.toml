@@ -1,2 +1,3 @@
 [workspace]
-members = ["const_env", "const_env_impl"]
+members = ["const_env", "const_env_impl", "const_env_tests"]
+resolver = "3"

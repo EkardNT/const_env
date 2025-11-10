@@ -1,0 +1,10 @@
+[package]
+name = "const_env_tests"
+version = "0.1.3"
+edition = "2024"
+
+[features]
+tracked = ["const_env/tracked"]
+
+[dependencies]
+const_env = { path = "../const_env" }

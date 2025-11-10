@@ -2,7 +2,7 @@
 name = "const_env"
 version = "0.1.3"
 authors = ["Drake Tetreault <ekardnt@ekardnt.com>"]
-edition = "2021"
+edition = "2024"
 description = "Configure const and static items by environment variables."
 homepage = "https://github.com/EkardNT/const_env"
 repository = "https://github.com/EkardNT/const_env"
@@ -12,14 +12,10 @@ categories = ["development-tools::build-utils", "config"]
 license = "CC0-1.0"
 
 [lib]
-proc_macro = true
+proc-macro = true
 
 [features]
 tracked = []
 
 [dependencies.const_env_impl]
-version = "=0.1.3"
 path = "../const_env_impl"
-
-[dev-dependencies]
-compiletest_rs = { version = "*", features = ["stable"] }
