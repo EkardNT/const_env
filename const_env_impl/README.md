@@ -27,7 +27,7 @@ Eventually you will be able to do so once support for running `parse` and `unwra
 
 | Feature name | Enabled by default? | Requires nightly? | Description |
 |---|---|---|---|
-| `tracked` | No | Yes | Use the unstable [proc_macro_tracked_env](https://github.com/rust-lang/rust/issues/99515) feature to inform the build system about the used environment variables. |
+| `tracked` | No | Yes | Use the unstable [proc_macro_tracked_env](https://github.com/rust-lang/rust/issues/74690) feature to inform the build system about the used environment variables. |
 
 ## Usage
 
@@ -209,11 +209,4 @@ const FOO: u32 = 0;
 const FOO: u32 = option_env!("FOO").and_then(|s| s.parse::<u32>().ok()).unwrap_or(0);
 ```
 
-Until that is possible, the only other alternative I'm aware of would be to use a lazy approach, which defers parsing until runtime.
-
-```rust
-use std::sync::LazyLock;
-static FOO: LazyLock<u32> = LazyLock::new(|| {
-    option_env!("FOO").and_then(|foo| foo.parse().ok()).unwrap_or(0)
-});
-```
+Until that is possible, I'm not aware of an alternative approach.

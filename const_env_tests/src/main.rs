@@ -1,5 +1,3 @@
-use std::sync::LazyLock;
-
 use const_env::{env_item, env_lit};
 
 const USIZE_ARRAY: [usize; 3] = env_lit!("INT_ARRAY", [1, 2, 3]);
@@ -69,10 +67,6 @@ struct Vec2<T> {
 static ORIGIN: Vec2<f64> = Vec2 { x: 0., y: 0. };
 
 static ORIGIN_LIT: Vec2<f32> = env_lit!("ORIGIN", Vec2 { x: 0., y: 0.});
-
-static FOO: LazyLock<u32> = LazyLock::new(|| {
-    option_env!("FOO").and_then(|foo| foo.parse().ok()).unwrap_or(0)
-});
 
 fn main() {
     assert_eq!([10, 11, 12], USIZE_ARRAY);
