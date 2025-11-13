@@ -27,7 +27,7 @@ Eventually you will be able to do so once support for running `parse` and `unwra
 
 | Feature name | Enabled by default? | Requires nightly? | Description |
 |---|---|---|---|
-| `tracked` | No | Yes | Use the unstable [proc_macro_tracked_env](https://github.com/rust-lang/rust/issues/74690) feature to inform the build system about the used environment variables. |
+| `tracked` | No | Yes | Use the unstable [proc_macro_tracked_env](https://github.com/rust-lang/rust/issues/99515) feature to inform the build system about the used environment variables. |
 
 ## Usage
 
