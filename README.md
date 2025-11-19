@@ -29,6 +29,34 @@ Eventually you will be able to do so once support for running `parse` and `unwra
 |---|---|---|---|
 | `tracked` | No | Yes | Use the unstable [proc_macro_tracked_env](https://github.com/rust-lang/rust/issues/99515) feature to inform the build system about the used environment variables. |
 
+## About Tracking
+
+"Tracking" refers to informing cargo that the procedural macros in this crate read certain environment variables so that the binaries will
+be automatically rebuilt if the environment variables change. Without tracking, your binary may be built once based on the initial values of your environment variables, but will not be automatically rebuilt when those environment variables change (you would instead need to manually
+rebuild e.g. by running `cargo clean && cargo build`).
+
+The official way of enabling tracking is using the unstable [proc_macro_tracked_env](https://github.com/rust-lang/rust/issues/99515) functions.
+However those functions are currently unstable, and require a nightly compiler. If you want this crate to use those functions, then enable this
+crate's `tracked` feature and this crate will use the `proc_macro::tracked_env::var` explicitly.
+
+However, this crate implements a workaround which enables tracking even for non-nighly compilers. The workaround was discovered by @ericseppanen
+in [this GitHub issue](https://github.com/EkardNT/const_env/issues/7#issuecomment-3543348587). Simply put, if a proc-macro emits the tokens for
+an `option_env!()` macro invocation, then cargo automatically learns about the environment variable dependency, the same as if the proc-macro
+had used the nightly `proc_macro::tracked_env::var` function. So this crate implements this workaround by always adding an unused call to the `option_env!` macro.
+
+For example, the env_item macro from this crate actually expands to:
+
+```rust
+#[env_item]
+const FOO: u32 = 123;
+
+// Expands to...
+const FOO: u32 = {
+    let _ = option_env!("FOO");
+    123
+};
+```
+
 ## Usage
 
 Add the dependency. If your crate uses nightly, enable the `tracked` feature for better
