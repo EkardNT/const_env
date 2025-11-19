@@ -39,7 +39,7 @@ The official way of enabling tracking is using the unstable [proc_macro_tracked_
 However those functions are currently unstable, and require a nightly compiler. If you want this crate to use those functions, then enable this
 crate's `tracked` feature and this crate will use the `proc_macro::tracked_env::var` explicitly.
 
-However, this crate implements a workaround which enables tracking even for non-nighly compilers. The workaround was discovered by @ericseppanen
+However, this crate implements a workaround which enables tracking even for non-nightly compilers. The workaround was discovered by @ericseppanen
 in [this GitHub issue](https://github.com/EkardNT/const_env/issues/7#issuecomment-3543348587). Simply put, if a proc-macro emits the tokens for
 an `option_env!()` macro invocation, then cargo automatically learns about the environment variable dependency, the same as if the proc-macro
 had used the nightly `proc_macro::tracked_env::var` function. So this crate implements this workaround by always adding an unused call to the `option_env!` macro.
