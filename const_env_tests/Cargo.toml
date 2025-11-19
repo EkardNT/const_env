@@ -16,4 +16,4 @@ license.workspace = true
 tracked = ["const_env/tracked"]
 
 [dependencies]
-const_env = { path = "../const_env", version = "0.1.4" }
+const_env = { path = "../const_env", version = "0.1.5" }
