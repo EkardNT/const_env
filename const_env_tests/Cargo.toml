@@ -2,7 +2,7 @@
 name = "const_env_tests"
 description = "Real tests using const_env."
 publish = false
-version.workspace = true
+version = "0.1.5"
 authors.workspace = true
 edition.workspace = true
 readme.workspace = true

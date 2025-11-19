@@ -3,7 +3,6 @@ members = ["const_env", "const_env_impl", "const_env_tests"]
 resolver = "3"
 
 [workspace.package]
-version = "0.1.4"
 authors = ["Drake Tetreault <ekardnt@ekardnt.com>"]
 edition = "2024"
 readme = "README.md"
