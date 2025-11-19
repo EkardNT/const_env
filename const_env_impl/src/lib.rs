@@ -2,8 +2,13 @@ use std::collections::HashMap;
 
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote_spanned};
-use syn::{Expr, ExprLit, Lit};
+use syn::{Expr, ExprLit, Lit, parse_quote_spanned};
 use syn::spanned::Spanned;
+
+const _: u32 = {
+    let _ = option_env!("SOME_VAR");
+    10
+};
 
 pub trait ReadEnv {
     fn read_env(&self, var_name: &String) -> Option<String>;
@@ -77,7 +82,7 @@ pub fn env_lit(tokens: TokenStream, read_env: impl ReadEnv) -> TokenStream {
     };
     let env_var_value = match read_env.read_env(&input.env_var_name.value()) {
         Some(env_var_value) => env_var_value,
-        None => return input.default_value.into_token_stream()
+        None => return wrap_tokens_for_tracking(input.env_var_name.value(), input.default_value.into_token_stream())
     };
     let env_var_value_tokens = match env_var_value.parse::<TokenStream>() {
         Ok(tokens) => tokens,
@@ -89,7 +94,7 @@ pub fn env_lit(tokens: TokenStream, read_env: impl ReadEnv) -> TokenStream {
     // specially by auto-adding quotes. Note that we only do this for top-level string literals -
     // other instances of literal strings, such as elements of an array, require the user to
     // manually quote them.
-    match input.default_value {
+    wrap_tokens_for_tracking(input.env_var_name.value(), match input.default_value {
         syn::Expr::Lit(syn::ExprLit { lit: syn::Lit::Str(_), ..}) => {
             let quoted = format!("\"{}\"", env_var_value);
             match syn::parse_str::<syn::LitStr>(&quoted) {
@@ -119,7 +124,7 @@ pub fn env_lit(tokens: TokenStream, read_env: impl ReadEnv) -> TokenStream {
             }
         }
         _ => env_var_value_tokens
-    }
+    })
 }
 
 /// Inner implementation details of `const_env::env_item`.
@@ -134,24 +139,22 @@ fn try_env_item(attr: TokenStream, item: TokenStream, read_env: impl ReadEnv) ->
     if let Ok(mut item_const) = syn::parse2::<syn::ItemConst>(item.clone()) {
         let default_var_name = format!("{}", item_const.ident);
         let var_name = extract_var_name(attr, default_var_name)?;
-        let var_value = match read_env.read_env(&var_name) {
-            Some(val) => val,
-            None => return Ok(item)
+        let new_expr = match read_env.read_env(&var_name) {
+            Some(var_value) => wrap_expr_for_tracking(var_name, value_to_literal(&var_value, &item_const.expr)?),
+            None => wrap_expr_for_tracking(var_name, *item_const.expr.clone())
         };
-        let new_expr = value_to_literal(&var_value, &item_const.expr)?;
-        let span = item_const.span();
         item_const.expr = Box::new(new_expr);
+        let span = item_const.span();
         Ok(quote_spanned!(span => #item_const))
     } else if let Ok(mut item_static) = syn::parse2::<syn::ItemStatic>(item.clone()) {
         let default_var_name = format!("{}", item_static.ident);
         let var_name = extract_var_name(attr, default_var_name)?;
-        let var_value = match read_env.read_env(&var_name) {
-            Some(val) => val,
-            None => return Ok(item)
+        let new_expr = match read_env.read_env(&var_name) {
+            Some(var_value) => wrap_expr_for_tracking(var_name, value_to_literal(&var_value, &item_static.expr)?),
+            None => wrap_expr_for_tracking(var_name, *item_static.expr.clone())
         };
-        let new_expr = value_to_literal(&var_value, &item_static.expr)?;
-        let span = item_static.span();
         item_static.expr = Box::new(new_expr);
+        let span = item_static.span();
         Ok(quote_spanned!(span => #item_static))
     } else {
         Err(syn::Error::new(attr.span(), "Macro is only valid on const or static items"))
@@ -249,4 +252,24 @@ fn value_to_literal(value: &str, original_expr: &Expr) -> Result<Expr, syn::Erro
             return Err(syn::Error::new_spanned(expr, "Original const expression was not a recognized literal expression"));
         }
     })
+}
+
+fn wrap_expr_for_tracking(env_var_name: String, expr: Expr) -> Expr {
+    let span = expr.span();
+    parse_quote_spanned! {span=>
+        {
+            let _ = option_env!(#env_var_name);
+            #expr
+        }
+    }
+}
+
+fn wrap_tokens_for_tracking(env_var_name: String, tokens: TokenStream) -> TokenStream {
+    let span = tokens.span();
+    quote_spanned! {span=> 
+        {
+            let _ = option_env!(#env_var_name);
+            #tokens
+        }
+    }
 }

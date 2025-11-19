@@ -20,5 +20,8 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
-    - name: Run tests with --tracked
-      run: cargo +nightly run --bin const_env_tests
+    - name: Run nighly tracking tests
+      run: cd const_env_tests && source set-env && cargo +nightly run
+    - name: Run non-nightly tracking tests
+      run: cd const_env_tests && ./run-tracking-tests.sh
+
